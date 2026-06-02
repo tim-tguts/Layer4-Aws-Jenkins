@@ -38,6 +38,9 @@ pipeline {
 
         stage('Deploy to EKS') {
             steps {
+		echo "Listing files in the repo root:"
+		sh "pwd"
+		sh "ls -la"
 	        dir('layer4-app-code') {
 		    echo "Ensuring namespace ${NAMESPACE} exists..."
                     sh "kubectl create namespace ${NAMESPACE} --dry-run=client -o yaml |kubectl apply -f -"
