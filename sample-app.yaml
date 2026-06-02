@@ -9,7 +9,7 @@ metadata:
   name: echo-deployment
   namespace: ecom-app
 spec:
-  replicas: 3
+  replicas: 4
   strategy: 
     type: RollingUpdate
     rollingUpdate: 
