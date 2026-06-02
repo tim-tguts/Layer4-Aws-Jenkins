@@ -38,12 +38,17 @@ pipeline {
 
         stage('Deploy to EKS') {
             steps {
-                echo "Deploying application to cluster..."
+	        dir('layer4-app-code') {
+		    echo "Ensuring namespace ${NAMESPACE} exists..."
+                    sh "kubectl create namespace ${NAMESPACE} --dry-run=client -o yaml |kubectl apply -f -"
+                    echo "Deploying application to cluster..."
                 // Example using Helm (Standard Track B practice)
-                // sh "helm upgrade --install my-app ./charts/my-app --namespace ${NAMESPACE} --v=5"
+                    sh "helm upgrade --install my-app ./charts/my-app --namespace ${NAMESPACE} --v=5"
                 
                 // Example using raw manifests if you aren't using Helm yet:
-                // sh "kubectl apply -f k8s/ --namespace ${NAMESPACE}"
+                    sh "kubectl apply -f sample-app.yaml --namespace ${NAMESPACE}"
+                    echo "Verifying rollout status..."
+	            sh "kubectl rollout status deployment/echo-deployment --namespace ${NAMESPACE}
             }
         }
     }
