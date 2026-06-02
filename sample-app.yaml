@@ -25,7 +25,7 @@ spec:
     spec:
       containers:
       - name: echo-app
-        image: gcr.io/google-containers/echoserver:1.4
+        image: registry.k8s.io/echoserver:1.9
         ports:
         - containerPort: 8080
         readinessProbe:
