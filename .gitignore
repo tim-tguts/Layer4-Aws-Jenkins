@@ -1,0 +1,17 @@
+# Terraform local files (if any bleed over)
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.tfstate.lock.info
+*.tfvars
+*.tfvars.json
+
+# Operating System / IDE files
+.DS_Store
+.idea/
+.vscode/
+
+# Application runtime files (adjust based on your language)
+node_modules/
+__pycache__/
+*.log
