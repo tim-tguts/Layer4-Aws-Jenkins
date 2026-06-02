@@ -41,7 +41,6 @@ pipeline {
 		echo "Listing files in the repo root:"
 		sh "pwd"
 		sh "ls -la"
-	        dir('layer4-app-code') {
 		    echo "Ensuring namespace ${NAMESPACE} exists..."
                     sh "kubectl create namespace ${NAMESPACE} --dry-run=client -o yaml |kubectl apply -f -"
                     echo "Deploying application to cluster..."
@@ -54,7 +53,6 @@ pipeline {
 	            sh "kubectl rollout status deployment/echo-deployment --namespace ${NAMESPACE}"
             }
         }
-    }
 }
 
     post {
