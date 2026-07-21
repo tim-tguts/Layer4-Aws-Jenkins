@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ecom-active
+  namespace: ecom-app
+spec:
+  ports:
+  - port: 80
+    targetPort: 8080
+  selector:
+    app: ecom-app
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ecom-preview
+  namespace: ecom-app
+spec:
+  ports:
+  - port: 80
+    targetPort: 8080
+  selector:
+    app: ecom-app

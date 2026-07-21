@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: ecom-success-rate
+  namespace: ecom-app
+spec:
+  metrics:
+  - name: success-rate
+    interval: 30s
+    count: 3
+    # Pass if >= 95% OR if no HTTP traffic exists yet (isnan)
+    successCondition: result[0] >= 0.95 || isnan(result[0])
+    failureLimit: 1
+    provider:
+      prometheus:
+        address: http://kube-prometheus-stack-prometheus.monitoring.svc:9090
+        query: |
+          sum(rate(http_requests_total{namespace="ecom-app", status=~"2..", service="ecom-preview"}[2m]))
+          /
+          sum(rate(http_requests_total{namespace="ecom-app", service="ecom-preview"}[2m]))

@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: ecom-app
+  namespace: ecom-app
+spec:
+  replicas: 4
+  strategy:
+    blueGreen:
+      activeService: ecom-active
+      previewService: ecom-preview
+      autoPromotionEnabled: true
+      scaleDownDelaySeconds: 300
+      prePromotionAnalysis:
+        templates:
+        - templateName: ecom-success-rate
+  selector:
+    matchLabels:
+      app: ecom-app
+  template:
+    metadata:
+      labels:
+        app: ecom-app
+    spec:
+      containers:
+      - name: ecom-app
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
