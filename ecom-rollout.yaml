@@ -24,6 +24,6 @@ spec:
     spec:
       containers:
       - name: ecom-app
-        image: nginx:alpine
+        image: registry.k8s.io/echoserver:1.9
         ports:
         - containerPort: 80
