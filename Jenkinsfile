@@ -43,8 +43,8 @@ pipeline {
                 sh "kubectl create namespace ${NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -"
 
                 echo "Deploying Argo Rollout and Analysis manifests to cluster..."
-                // Apply all manifests in layer4/ecom-app/
-                sh "kubectl apply -f layer4/ecom-app/ --namespace ${NAMESPACE}"
+                // Apply all manifests in layer4-app-code
+                sh "kubectl apply -f layer4-app-code --namespace ${NAMESPACE}"
 
                 echo "Verifying Argo Rollout status..."
                 // Monitor the rollout until it finishes promotion/analysis
