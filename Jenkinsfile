@@ -46,7 +46,7 @@ pipeline {
 
                 echo "Verifying Argo Rollout status..."
                 // Native Argo CLI tracking
-                sh "kubectl argo rollouts status rollout/ecom-app --namespace ${NAMESPACE}"
+                sh "kubectl argo rollouts status ecom-app --namespace ${NAMESPACE}"
             }
         }
     }
