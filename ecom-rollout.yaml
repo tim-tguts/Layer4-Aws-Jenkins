@@ -24,6 +24,6 @@ spec:
     spec:
       containers:
       - name: ecom-app
-        image: registry.k8s.io/echoserver:1.9
+        image: registry.k8s.io/echoserver:1.10
         ports:
         - containerPort: 80
