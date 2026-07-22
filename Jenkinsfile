@@ -1,4 +1,4 @@
-pipeline {
+peline {
     agent any
 
     environment {
@@ -32,7 +32,8 @@ pipeline {
                 echo 'Running application tests...'
             }
         }
-	stage('Deploy to EKS') {
+
+        stage('Deploy Preview & Run Analysis') {
             steps {
                 echo "Listing files in the repo root:"
                 sh "pwd"
@@ -44,8 +45,21 @@ pipeline {
                 echo "Deploying Argo Rollout and Analysis manifests to cluster..."
                 sh "kubectl apply -f ecom-rollout.yaml -f ecom-analysis.yaml --namespace ${NAMESPACE}"
 
-                echo "Verifying Argo Rollout status..."
-                // Native Argo CLI tracking
+                echo "Waiting for Preview deployment & Pre-Promotion Analysis to pass..."
+                sh "kubectl argo rollouts status ecom-app --namespace ${NAMESPACE} --watch=true"
+            }
+        }
+
+        stage('Promote to Production') {
+            input {
+                message "Promote new revision to Production (ecom-active)?"
+                ok "Promote Cutover"
+            }
+            steps {
+                echo "Manual approval received! Promoting traffic shift..."
+                sh "kubectl argo rollouts promote ecom-app --namespace ${NAMESPACE}"
+                
+                echo "Verifying full cutover status..."
                 sh "kubectl argo rollouts status ecom-app --namespace ${NAMESPACE}"
             }
         }
@@ -53,7 +67,7 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline completed successfully! Workload is live.'
+            echo 'Pipeline completed successfully! Workload is live in production.'
         }
         failure {
             echo 'Pipeline failed. Check the logs above for details.'
