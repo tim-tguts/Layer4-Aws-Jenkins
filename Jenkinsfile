@@ -32,8 +32,7 @@ pipeline {
                 echo 'Running application tests...'
             }
         }
-
-        stage('Deploy to EKS') {
+	stage('Deploy to EKS') {
             steps {
                 echo "Listing files in the repo root:"
                 sh "pwd"
@@ -43,12 +42,11 @@ pipeline {
                 sh "kubectl create namespace ${NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -"
 
                 echo "Deploying Argo Rollout and Analysis manifests to cluster..."
-                // Apply all manifests in layer4-app-code
-                sh "kubectl apply -f ecom-rollout.yaml -f ecom-analysis.yaml  --namespace ${NAMESPACE}"
+                sh "kubectl apply -f ecom-rollout.yaml -f ecom-analysis.yaml --namespace ${NAMESPACE}"
 
                 echo "Verifying Argo Rollout status..."
-                // Monitor the rollout until it finishes promotion/analysis
-                sh "kubectl rollout status rollout/ecom-app --namespace ${NAMESPACE}"
+                // Native Argo CLI tracking
+                sh "kubectl argo rollouts status rollout/ecom-app --namespace ${NAMESPACE}"
             }
         }
     }
