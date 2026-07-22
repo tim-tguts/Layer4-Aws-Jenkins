@@ -9,7 +9,7 @@ spec:
     interval: 30s
     # Pass if >= 95% OR if no HTTP traffic exists yet 
     count: 5
-    successCondition: count(result) == 0 || result[0] >= 0.95 
+    successCondition: count(result) == 0 || isNan(result[0]) || result[0] >= 0.95 
     failureLimit: 3
     provider:
       prometheus:
