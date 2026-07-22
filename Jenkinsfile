@@ -48,7 +48,7 @@ pipeline {
 
                 echo "Verifying Argo Rollout status..."
                 // Monitor the rollout until it finishes promotion/analysis
-                sh "kubectl argo rollouts status rollout/ecom-app --namespace ${NAMESPACE}"
+                sh "kubectl rollouts status rollout/ecom-app --namespace ${NAMESPACE}"
             }
         }
     }

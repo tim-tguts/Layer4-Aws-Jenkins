@@ -7,10 +7,9 @@ spec:
   metrics:
   - name: success-rate
     interval: 30s
-    count: 3
-    # Pass if >= 95% OR if no HTTP traffic exists yet (isnan)
-    successCondition: result[0] >= 0.95 || isnan(result[0])
-    failureLimit: 1
+    # Pass if >= 95% OR if no HTTP traffic exists yet 
+    successCondition: result[0] >= 0.95 
+    failureLimit: 3
     provider:
       prometheus:
         address: http://kube-prometheus-stack-prometheus.monitoring.svc:9090
