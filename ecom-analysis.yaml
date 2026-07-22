@@ -9,12 +9,14 @@ spec:
     interval: 30s
     # Pass if >= 95% OR if no HTTP traffic exists yet 
     count: 5
-    successCondition: count(result) == 0 || isNan(result[0]) || result[0] >= 0.95 
+    successCondition: result[0] >= 0.95 
     failureLimit: 3
     provider:
       prometheus:
         address: http://kube-prometheus-stack-prometheus.monitoring.svc:9090
         query: |
-          sum(rate(http_requests_total{namespace="ecom-app", status=~"2..", service="ecom-preview"}[2m]))
-          /
-          sum(rate(http_requests_total{namespace="ecom-app", service="ecom-preview"}[2m]))
+          (
+            sum(rate(http_requests_total{namespace="ecom-app", status=~"2..", service="ecom-preview"}[2m]))
+            /
+            sum(rate(http_requests_total{namespace="ecom-app", service="ecom-preview"}[2m]))
+          ) or vector(1)

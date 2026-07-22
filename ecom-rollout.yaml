@@ -25,6 +25,6 @@ spec:
     spec:
       containers:
       - name: ecom-app
-        image: nginx:1.25-alpine
+        image: nginx:1.26-alpine
         ports:
         - containerPort: 80
