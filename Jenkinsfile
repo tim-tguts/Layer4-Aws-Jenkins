@@ -46,7 +46,15 @@ pipeline {
                 sh "kubectl apply -f ecom-rollout.yaml -f ecom-analysis.yaml --namespace ${NAMESPACE}"
 
                 echo "Waiting for Preview deployment & Pre-Promotion Analysis to pass..."
-                sh "kubectl argo rollouts status ecom-app --namespace ${NAMESPACE} --watch=true"
+                // Loop until status is "Paused" (analysis passed, waiting for manual promotion)
+                sh '''
+                  echo "Waiting for pre-promotion analysis to complete and rollout to reach Paused state..."
+                  until kubectl argo rollouts get rollout ecom-app -n ${NAMESPACE} | grep -E "Paused|Healthy"; do
+                    echo "Analysis still running... sleeping 10s"
+                    sleep 10
+                  done
+                  echo "Pre-promotion analysis completed successfully! Ready for promotion."
+                '''
             }
         }
 
@@ -60,7 +68,7 @@ pipeline {
                 sh "kubectl argo rollouts promote ecom-app --namespace ${NAMESPACE}"
                 
                 echo "Verifying full cutover status..."
-                sh "kubectl argo rollouts status ecom-app --namespace ${NAMESPACE}"
+                sh "kubectl argo rollouts status ecom-app --namespace ${NAMESPACE} --watch=true"
             }
         }
     }
