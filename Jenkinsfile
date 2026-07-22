@@ -44,7 +44,7 @@ pipeline {
 
                 echo "Deploying Argo Rollout and Analysis manifests to cluster..."
                 // Apply all manifests in layer4-app-code
-                sh "kubectl apply -f layer4-app-code --namespace ${NAMESPACE}"
+                sh "kubectl apply -f ecom-rollout.yaml -f ecom-analysis.yaml  --namespace ${NAMESPACE}"
 
                 echo "Verifying Argo Rollout status..."
                 // Monitor the rollout until it finishes promotion/analysis
