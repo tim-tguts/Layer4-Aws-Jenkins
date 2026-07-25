@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: AnalysisTemplate
 metadata:
   name: ecom-success-rate
-  namespace: ecom-app
+  #namespace: ecom-app
 spec:
   metrics:
   - name: success-rate

@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
   name: ecom-app
-  namespace: ecom-app
+  #namespace: ecom-app
 spec:
   replicas: 4
   revisionHistoryLimit: 5
