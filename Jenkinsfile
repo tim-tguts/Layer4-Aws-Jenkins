@@ -4,81 +4,80 @@ pipeline {
     environment {
         AWS_REGION   = 'us-east-1'
         CLUSTER_NAME = 'tim-mastery-v2-cluster'
-        NAMESPACE    = 'ecom-app'
+        
+        // Dynamically assign Namespace and Approval requirement based on Git Tag vs Branch Push
+        TARGET_ENV   = "${TAG_NAME ? 'prod' : 'dev'}"
+        NAMESPACE    = "${TAG_NAME ? 'ecom-app-prod' : 'ecom-app-dev'}"
     }
 
     stages {
-        stage('Pre-Flight Checks') {
+        stage('Pre-Flight & Env Resolution') {
             steps {
-                echo 'Checking local tooling dependencies on Jenkins Agent...'
+                echo "=========================================="
+                echo " Target Environment : ${TARGET_ENV.toUpperCase()}"
+                echo " Target Namespace   : ${NAMESPACE}"
+                echo " Triggered By Tag   : ${TAG_NAME ?: 'None (Branch Push)'}"
+                echo "=========================================="
+                
                 sh 'aws --version'
                 sh 'kubectl version --client'
-                sh 'helm version'
             }
         }
 
         stage('Connect to EKS') {
             steps {
-                echo "Generating kubeconfig for ${CLUSTER_NAME}..."
                 sh "aws eks update-kubeconfig --region ${AWS_REGION} --name ${CLUSTER_NAME}"
-                
-                echo "Testing cluster connectivity..."
-                sh "kubectl get nodes"
-            }
-        }
-
-        stage('App Validation / Test') {
-            steps {
-                echo 'Running application tests...'
             }
         }
 
         stage('Deploy Preview & Run Analysis') {
             steps {
-                echo "Listing files in the repo root:"
-                sh "pwd"
-                sh "ls -la"
-
-                echo "Ensuring namespace ${NAMESPACE} exists..."
+                // Ensure target namespace exists (ecom-app-dev or ecom-app-prod)
                 sh "kubectl create namespace ${NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -"
 
-                echo "Deploying Argo Rollout and Analysis manifests to cluster..."
+                // Apply manifests into the target namespace
                 sh "kubectl apply -f ecom-rollout.yaml -f ecom-analysis.yaml --namespace ${NAMESPACE}"
 
-                echo "Waiting for Preview deployment & Pre-Promotion Analysis to pass..."
-                // Loop until status is "Paused" (analysis passed, waiting for manual promotion)
-                sh '''
-                  echo "Waiting for pre-promotion analysis to complete and rollout to reach Paused state..."
+                // Wait for analysis to complete / rollout to reach Paused or Healthy
+                sh """
+                  echo "Waiting for rollout in ${NAMESPACE}..."
                   until kubectl argo rollouts get rollout ecom-app -n ${NAMESPACE} | grep -E "Paused|Healthy"; do
-                    echo "Analysis still running... sleeping 10s"
+                    echo "Analysis running... sleeping 10s"
                     sleep 10
                   done
-                  echo "Pre-promotion analysis completed successfully! Ready for promotion."
-                '''
+                """
             }
         }
 
-        stage('Promote to Production') {
-            input {
-                message "Promote new revision to Production (ecom-active)?"
-                ok "Promote Cutover"
-            }
+        stage('Promote to Production / Dev') {
             steps {
-                echo "Manual approval received! Promoting traffic shift..."
-                sh "kubectl argo rollouts promote ecom-app --namespace ${NAMESPACE}"
-                
-                echo "Verifying full cutover status..."
-                sh "kubectl argo rollouts status ecom-app --namespace ${NAMESPACE} --watch=true"
+                script {
+                    if (TARGET_ENV == 'prod') {
+                        echo "PROD deployment detected! Requiring manual approval..."
+                        
+                        // Interactive manual gate for PROD only
+                        input message: "Approve deployment to PRODUCTION (${NAMESPACE})?", ok: "Promote to Prod"
+                        
+                        sh "kubectl argo rollouts promote ecom-app --namespace ${NAMESPACE}"
+                        sh "kubectl argo rollouts status ecom-app --namespace ${NAMESPACE} --watch=true"
+                    } else {
+                        echo "DEV deployment detected! Auto-promoting..."
+                        
+                        // Auto-promote for DEV
+                        sh "kubectl argo rollouts promote ecom-app --namespace ${NAMESPACE}"
+                        sh "kubectl argo rollouts status ecom-app --namespace ${NAMESPACE} --watch=true"
+                    }
+                }
             }
         }
     }
 
     post {
         success {
-            echo 'Pipeline completed successfully! Workload is live in production.'
+            echo "Successfully deployed to ${TARGET_ENV.toUpperCase()} namespace (${NAMESPACE})!"
         }
         failure {
-            echo 'Pipeline failed. Check the logs above for details.'
+            echo "Deployment to ${TARGET_ENV.toUpperCase()} failed."
         }
     }
 }
