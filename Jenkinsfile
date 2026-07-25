@@ -6,8 +6,8 @@ pipeline {
         CLUSTER_NAME = 'tim-mastery-v2-cluster'
         
         // Dynamically assign Namespace and Approval requirement based on Git Tag vs Branch Push
-        TARGET_ENV   = "${TAG_NAME ? 'prod' : 'dev'}"
-        NAMESPACE    = "${TAG_NAME ? 'ecom-app-prod' : 'ecom-app-dev'}"
+        TARGET_ENV   = "${env.TAG_NAME ? 'prod' : 'dev'}"
+        NAMESPACE    = "${env.TAG_NAME ? 'ecom-app-prod' : 'ecom-app-dev'}"
     }
 
     stages {
