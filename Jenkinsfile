@@ -42,7 +42,7 @@ pipeline {
                 sh "kubectl create namespace ${env.NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -"
 
                 // Apply manifests into the target namespace
-                sh "kubectl apply -f ecom-rollout.yaml -f ecom-analysis.yaml --namespace ${env.NAMESPACE}"
+                sh "kubectl apply -f ecom-services.yaml -f ecom-rollout.yaml -f ecom-analysis.yaml --namespace ${env.NAMESPACE}"
 
                 // Wait for analysis to complete / rollout to reach Paused or Healthy
                 sh """
